@@ -1,0 +1,19 @@
+
+# google
+*google-credential.json*
+
+# k8s-secrets
+*secret*
+
+# macOS
+.DS_Store
+
+# Terraform
+.out/**
+.terraform/**
+terraform.tfstate
+terraform.tfvars
+terraform.tfstate.backup
+terraform.tfstate.*.backup
+**/.terraform/**
+crash.log
