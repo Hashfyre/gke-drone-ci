@@ -11,7 +11,7 @@
 # Terraform
 .out/**
 .terraform/**
-terraform.tfstate
+*terraform.tfstate*
 terraform.tfvars
 terraform.tfstate.backup
 terraform.tfstate.*.backup
