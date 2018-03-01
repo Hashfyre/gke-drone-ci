@@ -1,0 +1,64 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: drone-agent
+  namespace: drone
+  labels:
+    app: drone
+    component: agent
+spec:
+  template:
+    metadata:
+      labels:
+        app: drone
+        component: agent
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-nodepool: drone-agent
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      volumes:
+        - name: docker-graph-storage
+          emptyDir: {}
+      containers:
+      - name: drone-agent
+        image: docker.io/drone/agent:0.8.1
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: DRONE_SERVER
+            valueFrom:
+              configMapKeyRef:
+                name: drone
+                key: DRONE_SERVER
+          - name: DRONE_DEBUG
+            valueFrom:
+              configMapKeyRef:
+                name: drone
+                key: DRONE_DEBUG
+          - name: DOCKER_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: drone
+                key: DOCKER_HOST
+          - name: DRONE_MAX_PROCS
+            valueFrom:
+              configMapKeyRef:
+                name: drone
+                key: DRONE_MAX_PROCS
+          - name: DRONE_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: drone
+                key: DRONE_SHARED_SECRET
+        resources: {}
+      - name: drone-dind
+        image: docker:18.01.0-dind
+        env:
+        - name: DOCKER_DRIVER
+          value: overlay
+        securityContext:
+            privileged: true
+        volumeMounts:
+          - name: docker-graph-storage
+            mountPath: /var/lib/docker
+        resources: {}

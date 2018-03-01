@@ -1,0 +1,11 @@
+# Generate a cloudsql-instance-creds-secrets.yml using this template
+apiVersion: v1
+kind: Secret
+metadata:
+  name: drone-cloudsql-instance-credentials
+  namespace: drone
+  labels:
+    app: drone
+type: Opaque
+data:
+  credentials.json: <b64encode(credentials.json)>

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: drone
+  namespace: drone
+  labels:
+    name: drone
+data:
+  DRONE_HOST: https://drone.hashfyre.com
+  DRONE_SERVER: drone-server:9000
+  DRONE_OPEN: "true"
+  DRONE_GITHUB: "true"
+  DRONE_DEBUG: "true"
+  DRONE_DATABASE_DRIVER: "postgres"
+  DOCKER_HOST: tcp://localhost:2375
+  DRONE_MAX_PROCS: "5"
+  DRONE_ADMIN: Hashfyre
+  DRONE_LETS_ENCRYPT: "true"

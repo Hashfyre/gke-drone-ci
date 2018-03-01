@@ -1,0 +1,11 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: drone-web
+  namespace: drone
+  labels:
+    app: drone
+spec:
+  backend:
+    serviceName: drone-web
+    servicePort: 8000

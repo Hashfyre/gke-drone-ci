@@ -1,0 +1,14 @@
+# Generate a secrets.yml using this template
+apiVersion: v1
+kind: Secret
+metadata:
+  name: drone
+  namespace: drone
+  labels:
+    app: drone
+type: Opaque
+data:
+  DRONE_SHARED_SECRET: <b64encode(DRONE_SHARED_SECRET)>
+  GITHUB_CLIENT: <b64encode(GITHUB_OAUTH_CLIENT_ID)>
+  GITHUB_SECRET: <b64encode(GITHUB_OAUTH_SECRET)>
+  DRONE_DATABASE_DATASOURCE: <b64encode(postgres://proxyuser:password@127.0.0.1:5432/postgres?sslmode=disable)>

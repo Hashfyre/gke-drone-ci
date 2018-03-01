@@ -1,0 +1,120 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: drone-server
+  namespace: drone
+  labels:
+    app: drone
+    component: server
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: drone
+        component: server
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-nodepool: drone-server
+      volumes:
+        - name: drone-cloudsql-instance-credentials
+          secret:
+            secretName: drone-cloudsql-instance-credentials
+        - name: cloudsql
+          emptyDir:
+        - name: ssl-certs
+          hostPath:
+            path: /etc/ssl/certs
+      containers:
+      - name: cloudsql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.11
+        command: ["/cloud_sql_proxy", "--dir=/cloudsql",
+                  "-instances=tidal-cipher-196705:us-central1:drone=tcp:5432",
+                  "-credential_file=/secrets/cloudsql/credentials.json"]
+        volumeMounts:
+          - name: drone-cloudsql-instance-credentials
+            mountPath: /secrets/cloudsql
+            readOnly: true
+          - name: ssl-certs
+            mountPath: /etc/ssl/certs
+          - name: cloudsql
+            mountPath: /cloudsql
+        resources: {}
+      - name: drone-server
+        image: "docker.io/drone/drone:0.8.1"
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: DRONE_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: drone
+                key: DRONE_HOST
+          - name: DRONE_ADMIN
+            valueFrom:
+              configMapKeyRef:
+                name: drone
+                key: DRONE_ADMIN
+          - name: DRONE_OPEN
+            valueFrom:
+              configMapKeyRef:
+                name: drone
+                key: DRONE_OPEN
+          - name: DRONE_GITHUB
+            valueFrom:
+              configMapKeyRef:
+                name: drone
+                key: DRONE_GITHUB
+          - name: DRONE_DEBUG
+            valueFrom:
+              configMapKeyRef:
+                name: drone
+                key: DRONE_DEBUG
+          - name: DRONE_DATABASE_DRIVER
+            valueFrom:
+              configMapKeyRef:
+                name: drone
+                key: DRONE_DATABASE_DRIVER
+          - name: DRONE_LETS_ENCRYPT
+            valueFrom:
+              configMapKeyRef:
+                name: drone
+                key: DRONE_LETS_ENCRYPT
+          - name: DRONE_DATABASE_DATASOURCE
+            valueFrom:
+              secretKeyRef:
+                name: drone
+                key: DRONE_DATABASE_DATASOURCE
+          - name: DRONE_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: drone
+                key: DRONE_SHARED_SECRET
+          - name: DRONE_GITHUB_CLIENT
+            valueFrom:
+              secretKeyRef:
+                name: drone
+                key: GITHUB_CLIENT
+          - name: DRONE_GITHUB_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: drone
+                key: GITHUB_SECRET
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        - name: https
+          containerPort: 443
+          protocol: TCP
+        - name: grpc
+          containerPort: 9000
+          protocol: TCP
+        livenessProbe:
+          tcpSocket:
+            port: 80
+        resources: {}
